@@ -17,6 +17,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('',include(router.urls)),
     path("user_login/",UserLoginApiView.as_view()),
+    path("user_logout/",UserLogoutApiView.as_view()),
     path("user_register/",UserRegisterApiView.as_view()),
     path("upload-avatar/",UploadAvatarApiView.as_view()),
     path('user_refresh_token/', TokenRefreshView.as_view(), name='token_refresh'),

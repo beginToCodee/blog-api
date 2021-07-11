@@ -225,3 +225,20 @@ class UploadAvatarApiView(APIView):
             return Response(user_serializer.data,status=200)
         else:
             return Response(serializer.errors,status=404)
+
+class UserLogoutApiView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self,request):
+        refresh = request.data.get('refresh')
+        if refresh:
+            token = RefreshToken(refresh)
+            token.blacklist()
+            return Response(status=200)
+        else:
+            resp = {
+                "refresh":["this field is required"]
+            }
+            return Response(resp,status=404)
+            
+    
