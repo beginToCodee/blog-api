@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 from .permissions import *
 from rest_framework.parsers import FileUploadParser,MultiPartParser,FormParser
 from rest_framework.decorators import action
+from rest_framework import filters
 
 
 class PostApiView(ModelViewSet):
@@ -22,6 +23,9 @@ class PostApiView(ModelViewSet):
 
     serializer_class = PostSerializer
     queryset = Post.objects.all()
+    # filter_backends = [filters.SearchFilter]
+    # search_filters = ['category',]
+
 
     def get_object(self):
         pk = self.kwargs.get('pk')

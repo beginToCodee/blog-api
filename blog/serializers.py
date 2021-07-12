@@ -6,29 +6,29 @@ from django.contrib.auth.hashers import check_password,make_password
 
 
 class ReplySerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
+    user_detail = serializers.SerializerMethodField()
 
         
 
-    def get_user(self,obj):
+    def get_user_detail(self,obj):
         user = User.objects.get(id=obj.user.id)
         serializer = UserSerializer(user,many=False)
-        return serializer.data
+        return serializer.dataa
     
     class Meta:
         model = Reply
         fields = "__all__"
-        read_only_fields = ['id','user']
+        read_only_fields = ['id','user_detail']
     
 
 class CommentSerializer(serializers.ModelSerializer):
     replies = ReplySerializer(read_only=True,many=True)
-    user = serializers.SerializerMethodField()
+    user_detail = serializers.SerializerMethodField()
 
     # def get_user(self,obj):
         
 
-    def get_user(self,obj):
+    def get_user_detail(self,obj):
         user = User.objects.get(id=obj.user.id)
         serializer = UserSerializer(user,many=False)
         return serializer.data
@@ -36,19 +36,19 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = "__all__"
-        read_only_fields = ["id","user"]
+        read_only_fields = ["id","user_detail"]
 
 
 
 
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(read_only=True,many=True)
-    user = serializers.SerializerMethodField()
+    user_detail = serializers.SerializerMethodField()
 
     # def get_user(self,obj):
         
 
-    def get_user(self,obj):
+    def get_user_detail(self,obj):
         user = User.objects.get(id=obj.user.id)
         serializer = UserSerializer(user,many=False)
         return serializer.data
@@ -56,7 +56,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = "__all__"
-        read_only_fields = ['id','user']
+        read_only_fields = ['id','user_detail']
 
 class TutorialSerializer(serializers.ModelSerializer):
     posts = PostSerializer(read_only=True,many=True)
