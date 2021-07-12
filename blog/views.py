@@ -37,11 +37,15 @@ class PostApiView(ModelViewSet):
 
     def create(self,request):
         data = request.data
+        user_serializer = UserSerializer(request.user)
+
         data['user'] = request.user.id
+        # print(data)
         serializer = PostSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            post = serializer.save(request.user)
+            serializer = PostSerializer(post)
             return Response(serializer.data,status=201)
         else:
             return Response(serializer.errors,status=404)
@@ -94,11 +98,11 @@ class CommentApiView(ModelViewSet):
 
     def create(self,request):
         data = request.data
-        data['user'] = request.user.id
         serializer = CommentSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            comment = serializer.save(request.user)
+            serializer = CommentSerializer(comment)
             return Response(serializer.data,status=201)
         else:
             return Response(serializer.errors,status=404)
@@ -117,10 +121,11 @@ class ReplyApiView(ModelViewSet):
     
     def create(self,request):
         data = request.data
-        data['user'] = request.user.id
+
         serializer = ReplySerializer(data=data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            reply = serializer.save(request.user)
+            serializer = ReplySerializer(reply)
             return Response(serializer.data,status=201)
         else:
             return Response(serializer.errors,status=404)
@@ -130,7 +135,7 @@ class CategoryApiView(ModelViewSet):
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 class UserApiView(ModelViewSet):
     serializer_class = UserSerializer

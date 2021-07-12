@@ -6,29 +6,36 @@ from django.contrib.auth.hashers import check_password,make_password
 
 
 class ReplySerializer(serializers.ModelSerializer):
-    user_detail = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
 
         
 
-    def get_user_detail(self,obj):
+    def get_user(self,obj):
         user = User.objects.get(id=obj.user.id)
         serializer = UserSerializer(user,many=False)
-        return serializer.dataa
+        return serializer.data
     
     class Meta:
         model = Reply
         fields = "__all__"
-        read_only_fields = ['id','user_detail']
+        read_only_fields = ['id','user']
+    
+    def save(self,user):
+        validated_data = self.validated_data
+        validated_data['user']=user
+        
+        reply = Reply.objects.create(**validated_data)
+        return reply
     
 
 class CommentSerializer(serializers.ModelSerializer):
     replies = ReplySerializer(read_only=True,many=True)
-    user_detail = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
 
     # def get_user(self,obj):
         
 
-    def get_user_detail(self,obj):
+    def get_user(self,obj):
         user = User.objects.get(id=obj.user.id)
         serializer = UserSerializer(user,many=False)
         return serializer.data
@@ -36,19 +43,26 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = "__all__"
-        read_only_fields = ["id","user_detail"]
+        read_only_fields = ["id","user"]
+    
+    def save(self,user):
+        validated_data = self.validated_data
+        validated_data['user']=user
+        
+        comment = Comment.objects.create(**validated_data)
+        return comment
 
 
 
 
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(read_only=True,many=True)
-    user_detail = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
 
     # def get_user(self,obj):
         
 
-    def get_user_detail(self,obj):
+    def get_user(self,obj):
         user = User.objects.get(id=obj.user.id)
         serializer = UserSerializer(user,many=False)
         return serializer.data
@@ -56,7 +70,14 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = "__all__"
-        read_only_fields = ['id','user_detail']
+        read_only_fields = ['id','user']
+    
+    def save(self,user):
+        validated_data = self.validated_data
+        validated_data['user']=user
+        print(validated_data)
+        post = Post.objects.create(**validated_data)
+        return post
 
 class TutorialSerializer(serializers.ModelSerializer):
     posts = PostSerializer(read_only=True,many=True)
@@ -68,7 +89,7 @@ class TutorialSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    posts = PostSerializer(read_only=True,many=True)
+    # posts = PostSerializer(read_only=True,many=True)
     class Meta:
         model = Category
         fields = "__all__"
@@ -79,9 +100,11 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = "__all__"
-        read_only_fields = ['id']
+        read_only_fields = ['id','user']
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
+    # tutorials = TutorialSerializer(read_only=True,many=True)
+    # posts = PostSerializer(many=True,read_only=True)
     class Meta:
         model = User
         fields=['id','username','email','first_name','last_name','last_login','profile']
