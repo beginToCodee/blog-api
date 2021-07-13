@@ -50,38 +50,74 @@ class PostApiView(ModelViewSet):
         else:
             return Response(serializer.errors,status=404)
 
-class PostLikeApiView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-    def post(self,request):
-        user = request.user
-        # print(request.data)
-        post_id = request.data['post']
-        post = get_object_or_404(Post.objects.all(),pk=post_id)
-        post.likes.add(user)
+    @action(detail=True, methods=['put'])
+    def likes(self,request,pk=None):
+        post = get_object_or_404(Post.objects.all(),pk=pk)
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)
+            return Response(status=204)
+        else:
+            post.likes.add(request.user)
+            return Response(status=200)
+        
+    
+    @action(detail=True, methods=['put'])
+    def views(self,request,pk=None):
+        post = get_object_or_404(Post.objects.all(),pk=pk)
+        post.views.add(request.user)
         return Response(status=200)
+    
+    @action(detail=True, methods=['put'])
+    def followers(self,request,pk=None):
+        post = get_object_or_404(Post.objects.all(),pk=pk)
+        if request.user in post.follower.all():
+            post.follower.remove(request.user)
+            return Response(status=204)
+        else:
+            post.follower.add(request.user)
+            return Response(status=200)
 
-class PostViewsApiView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+        
 
-    def post(self,request):
-        user = request.user
-        # print(request.data)
-        post_id = request.data['post']
-        post = get_object_or_404(Post.objects.all(),pk=post_id)
-        post.views.add(user)
-        return Response(status=200)
+    
+        
 
-class PostFollowerApiView(APIView):
 
-    def post(self,request):
-        user = request.user
-        # print(request.data)
-        post_id = request.data['post']
-        post = get_object_or_404(Post.objects.all(),pk=post_id)
-        post.followers.add(user)
-        return Response(status=200)
+
+
+
+# class PostLikeApiView(APIView):
+#     authentication_classes = [JWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     def post(self,request):
+#         user = request.user
+#         # print(request.data)
+#         post_id = request.data['post']
+#         post = get_object_or_404(Post.objects.all(),pk=post_id)
+#         post.likes.add(user)
+#         return Response(status=200)
+
+# class PostViewsApiView(APIView):
+#     authentication_classes = [JWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self,request):
+#         user = request.user
+#         # print(request.data)
+#         post_id = request.data['post']
+#         post = get_object_or_404(Post.objects.all(),pk=post_id)
+#         post.views.add(user)
+#         return Response(status=200)
+
+# class PostFollowerApiView(APIView):
+
+#     def post(self,request):
+#         user = request.user
+#         # print(request.data)
+#         post_id = request.data['post']
+#         post = get_object_or_404(Post.objects.all(),pk=post_id)
+#         post.followers.add(user)
+#         return Response(status=200)
 
 
 

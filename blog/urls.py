@@ -21,8 +21,6 @@ urlpatterns = [
     path("user_register/",UserRegisterApiView.as_view()),
     path("upload-avatar/",UploadAvatarApiView.as_view()),
     path('user_refresh_token/', TokenRefreshView.as_view(), name='token_refresh'),
-    path("likes/",PostLikeApiView.as_view()),
-    path("views/",PostViewsApiView.as_view()),
-    path("followers/",PostFollowerApiView.as_view()),
+  
 
 ]
