@@ -15,6 +15,8 @@ from .permissions import *
 from rest_framework.parsers import FileUploadParser,MultiPartParser,FormParser
 from rest_framework.decorators import action
 from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 
 class PostApiView(ModelViewSet):
@@ -23,8 +25,9 @@ class PostApiView(ModelViewSet):
 
     serializer_class = PostSerializer
     queryset = Post.objects.all()
-    # filter_backends = [filters.SearchFilter]
-    # search_filters = ['category',]
+    filter_backends = [DjangoFilterBackend,filters.SearchFilter]
+    filterset_fields = ['category','tutorial']
+    search_fields = ['title', 'description','user__username']
 
 
     def get_object(self):
@@ -76,6 +79,13 @@ class PostApiView(ModelViewSet):
         else:
             post.follower.add(request.user)
             return Response(status=200)
+    
+    @action(detail=True,methods=['get'])
+    def comments(self,request,pk=None):
+        post = get_object_or_404(Post.objects.all(),pk=pk)
+        comments = Comment.objects.filter(post=post)
+        serializer = CommentSerializer(comments,many=True)
+        return Response(serializer.data,status=200)
 
         
 
@@ -126,6 +136,8 @@ class CommentApiView(ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly,IsPostOwnerOrCommentOwnerOrIsAdmin]
     serializer_class = CommentSerializer
     queryset = Comment.objects.all()
+    filter_backends = [DjangoFilterBackend,filters.SearchFilter]
+    filterset_fields = ['post','user__username']
     def get_object(self):
         pk = self.kwargs.get('pk')
         obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
@@ -150,7 +162,7 @@ class ReplyApiView(ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly,IsPostOwnerOrReplyOwnerOrIsAdmin]
     def get_object(self):
-        pk = self.kwargs.get('pk')
+        
         obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
         self.check_object_permissions(self.request, obj)
         return obj
@@ -207,6 +219,10 @@ class TutorialApiView(ModelViewSet):
     queryset = Tutorial.objects.all()
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated,IsOwnUserOrIsAdmin]
+    filter_backends = [DjangoFilterBackend,filters.SearchFilter]
+    filterset_fields = ['user']
+    search_fields=['name']
+    
     def get_object(self):
         pk = self.kwargs.get('pk')
         obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
