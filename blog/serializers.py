@@ -72,12 +72,24 @@ class PostSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ['id','user']
     
-    def save(self,user):
-        validated_data = self.validated_data
-        validated_data['user']=user
-        print(validated_data)
-        post = Post.objects.create(**validated_data)
-        return post
+    
+    
+    def save(self,user=None):
+        if user:
+            validated_data = self.validated_data
+            validated_data['user']=user
+            print(validated_data.get('likes'))
+
+            if validated_data.get('likes') is not None:
+                validated_data.pop('likes')
+            if validated_data.get('follower') is not None:
+                validated_data.pop('follower')
+            if validated_data.get('views') is not None:
+                validated_data.pop('views')
+            post = Post.objects.create(**validated_data)
+            return post
+        else:
+            return super(PostSerializer,self).save()
 
 class TutorialSerializer(serializers.ModelSerializer):
     posts = PostSerializer(read_only=True,many=True)

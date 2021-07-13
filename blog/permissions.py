@@ -27,6 +27,17 @@ class IsPostOwnerOrReplyOwnerOrIsAdmin(BasePermission):
 
 class IsOwnUserOrIsAdmin(BasePermission):
     def has_object_permission(self,request,view,obj):
-        if request.method in permissions.SAFE_METHODS or request.user.is_superuser:
+        if request.method == 'DELETE':
+            return request.user.is_superuser
+        else:
+            if request.method in permissions.SAFE_METHODS or request.user.is_superuser:
+                return True
+            return request.user == obj
+
+class IsAdminOrReadOnly(BasePermission):
+    def has_permission(self,request,view):
+        print(request.user.is_authenticated)
+        if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user == obj
+                
+        

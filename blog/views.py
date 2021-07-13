@@ -12,12 +12,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly,IsAdminUser
 from .permissions import *
-from rest_framework.parsers import FileUploadParser,MultiPartParser,FormParser
+from rest_framework.parsers import FileUploadParser,MultiPartParser,FormParser,JSONParser
 from rest_framework.decorators import action
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
-
+from rest_framework.decorators import parser_classes
 
 class PostApiView(ModelViewSet):
     authentication_classes = [JWTAuthentication]
@@ -25,6 +25,7 @@ class PostApiView(ModelViewSet):
 
     serializer_class = PostSerializer
     queryset = Post.objects.all()
+    parser_classes = [JSONParser,MultiPartParser,FormParser]
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
     filterset_fields = ['category','tutorial']
     search_fields = ['title', 'description','user__username']
@@ -40,10 +41,7 @@ class PostApiView(ModelViewSet):
 
     def create(self,request):
         data = request.data
-        user_serializer = UserSerializer(request.user)
-
-        data['user'] = request.user.id
-        # print(data)
+        
         serializer = PostSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
@@ -183,14 +181,14 @@ class CategoryApiView(ModelViewSet):
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly,IsAdminOrReadOnly]
 
 class UserApiView(ModelViewSet):
     serializer_class = UserSerializer
     queryset = User.objects.all()
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly,IsOwnUserOrIsAdmin]
-    parser_classes = [MultiPartParser,FormParser]
+
     def get_object(self):
         pk = self.kwargs.get('pk')
         obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
@@ -198,6 +196,7 @@ class UserApiView(ModelViewSet):
         return obj
     
     @action(detail=True, methods=['put'])
+    @parser_classes([MultiPartParser,FormParser])
     def profile(self,request,pk=None):
         user = self.get_object()
       
