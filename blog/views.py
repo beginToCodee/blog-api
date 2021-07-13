@@ -271,20 +271,20 @@ class UserRegisterApiView(APIView):
         else:
             return Response(serializer.errors,status=404)
 
-class UploadAvatarApiView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser,FormParser]
+# class UploadAvatarApiView(APIView):
+#     authentication_classes = [JWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     parser_classes = [MultiPartParser,FormParser]
 
-    def post(self,request): 
-        print(request.FILES)
-        serializer = ProfileSerializer(data=request.data,instance=request.user.profile,partial=True)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            user_serializer = UserSerializer(request.user,many=False)
-            return Response(user_serializer.data,status=200)
-        else:
-            return Response(serializer.errors,status=404)
+#     def post(self,request): 
+#         print(request.FILES)
+#         serializer = ProfileSerializer(data=request.data,instance=request.user.profile,partial=True)
+#         if serializer.is_valid(raise_exception=True):
+#             serializer.save()
+#             user_serializer = UserSerializer(request.user,many=False)
+#             return Response(user_serializer.data,status=200)
+#         else:
+#             return Response(serializer.errors,status=404)
 
 class UserLogoutApiView(APIView):
     authentication_classes = [JWTAuthentication]
