@@ -36,8 +36,9 @@ class IsOwnUserOrIsAdmin(BasePermission):
 
 class IsAdminOrReadOnly(BasePermission):
     def has_permission(self,request,view):
-        print(request.user.is_authenticated)
+        
         if request.method in permissions.SAFE_METHODS:
             return True
+        return request.user.is_superuser
                 
         
