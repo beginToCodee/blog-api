@@ -32,9 +32,11 @@ class Post(DateTimePicker):
     likes = models.ManyToManyField('auth.User',blank=True,related_name="likes")
     views = models.ManyToManyField('auth.User',blank=True,related_name="views")
     tutorial = models.ForeignKey(Tutorial,on_delete=models.CASCADE,related_name="posts",null=True)
-    follower = models.ManyToManyField('auth.User',blank=True,related_name="followers")
+
     def __str__(self):
         return self.title
+    
+
 
 
 class Comment(DateTimePicker):

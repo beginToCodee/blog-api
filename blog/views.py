@@ -68,15 +68,15 @@ class PostApiView(ModelViewSet):
         post.views.add(request.user)
         return Response(status=200)
     
-    @action(detail=True, methods=['put'])
-    def followers(self,request,pk=None):
-        post = get_object_or_404(Post.objects.all(),pk=pk)
-        if request.user in post.follower.all():
-            post.follower.remove(request.user)
-            return Response(status=204)
-        else:
-            post.follower.add(request.user)
-            return Response(status=200)
+    # @action(detail=True, methods=['put'])
+    # def followers(self,request,pk=None):
+    #     post = get_object_or_404(Post.objects.all(),pk=pk)
+    #     if request.user in post.follower.all():
+    #         post.follower.remove(request.user)
+    #         return Response(status=204)
+    #     else:
+    #         post.follower.add(request.user)
+    #         return Response(status=200)
     
     @action(detail=True,methods=['get'])
     def comments(self,request,pk=None):

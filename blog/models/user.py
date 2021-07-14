@@ -13,6 +13,7 @@ class Profile(models.Model):
     address = models.CharField(max_length=150,blank=True)
     birth_date = models.DateField(blank=True,null=True)
     gender = models.CharField(max_length=10,choices=gender_choices,default=gender_choices[0][1])
+    follower = models.ManyToManyField('auth.User',blank=True,related_name="followers")
 
     def __str__(self):
         return self.user.username
