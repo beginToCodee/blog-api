@@ -36,6 +36,11 @@ class Post(DateTimePicker):
     def __str__(self):
         return self.title
     
+    @staticmethod
+    def autocomplete_search_fields():
+        return 'title', 'user__name'
+
+    
 
 
 
@@ -44,8 +49,7 @@ class Comment(DateTimePicker):
     user = models.ForeignKey('auth.User',on_delete=models.CASCADE,related_name="comments")
     post = models.ForeignKey(Post,on_delete=models.CASCADE,related_name="comments")
 
-    def __str__(self):
-        return self.post
+    
 
 class Reply(DateTimePicker):
     content = models.TextField()
