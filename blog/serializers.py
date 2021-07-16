@@ -17,7 +17,7 @@ class ReplySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Reply
-        fields = ['id','content','user','comment']
+        fields = "__all__"
         read_only_fields = ['id','user','comment']
     
     def save(self,user):
@@ -42,7 +42,7 @@ class CommentSerializer(serializers.ModelSerializer):
    
     class Meta:
         model = Comment
-        fields = ['id','content','user','replies']
+        fields = "__all__"
         read_only_fields = ["id","user"]
     
     def save(self,user):

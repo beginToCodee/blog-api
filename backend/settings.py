@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-e1%)wg3$68w@a#923$0tb70^%o46sh*g0i*(w=6c7&e6y5l(pa'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["blog-api7991.herokuapp.com","localhost"]
 
@@ -189,3 +189,11 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 JET_SIDE_MENU_COMPACT = True
+# JET_INDEX_DASHBOARD = 'jet.dashboard.dashboard.DefaultIndexDashboard'
+# JET_APP_INDEX_DASHBOARD = 'jet.dashboard.dashboard.DefaultAppIndexDashboard'
+
+
+# JET_APP_INDEX_DASHBOARD = 'dashboard.CustomIndexDashboard'
+JET_INDEX_DASHBOARD = 'backend.dashboard.CustomIndexDashboard'
+import os
+# JET_MODULE_GOOGLE_ANALYTICS_CLIENT_SECRETS_FILE = os.path.join(BASE_DIR, 'client_secrets.json')

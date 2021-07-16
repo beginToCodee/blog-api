@@ -11,6 +11,12 @@ from .models import *
 # @admin.register(User)
 admin.AdminSite.site_header=format_html("<h3>Learn More</h3>")
 
+class MyAdminSite(AdminSite):
+    site_title = "Admin Login"
+
+admin_site = MyAdminSite()
+
+
 
 
 # Register your models here.

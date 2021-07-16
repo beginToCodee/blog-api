@@ -18,9 +18,12 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 
+admin.site.site_title="Learn More"
+
 urlpatterns = [
     path('jet/', include('jet.urls', 'jet')),
     path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  
     path('blog-api/',include("blog.urls")),
     path('admin/', admin.site.urls),
+    # path("google-analytic/",google_analytics_views),
 ]+static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

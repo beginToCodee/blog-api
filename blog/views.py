@@ -68,15 +68,7 @@ class PostApiView(ModelViewSet):
         post.views.add(request.user)
         return Response(status=200)
     
-    # @action(detail=True, methods=['put'])
-    # def followers(self,request,pk=None):
-    #     post = get_object_or_404(Post.objects.all(),pk=pk)
-    #     if request.user in post.follower.all():
-    #         post.follower.remove(request.user)
-    #         return Response(status=204)
-    #     else:
-    #         post.follower.add(request.user)
-    #         return Response(status=200)
+    
     
     @action(detail=True,methods=['get'])
     def comments(self,request,pk=None):
@@ -207,6 +199,16 @@ class UserApiView(ModelViewSet):
             return Response(user_serializer.data,status=200)
         else:
             return Response(serializer.errors,status=404)
+    
+    @action(detail=True, methods=['put'])
+    def followers(self,request,pk=None):
+        user = get_object_or_404(User.objects.all(),pk=pk)
+        if request.user in user.profile.follower.all():
+            user.profile.follower.remove(request.user)
+            return Response(status=204)
+        else:
+            user.profile.follower.add(request.user)
+            return Response(status=200)
         
 
     
