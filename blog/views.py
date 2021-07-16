@@ -1,3 +1,4 @@
+
 from django.db.models.base import Model
 from django.http.response import Http404
 from django.shortcuts import render,get_object_or_404
@@ -37,19 +38,12 @@ class PostApiView(ModelViewSet):
         self.check_object_permissions(self.request, obj)
         return obj
 
-    
 
-    def create(self,request):
-        data = request.data
-        
-        serializer = PostSerializer(data=data)
-
-        if serializer.is_valid(raise_exception=True):
-            post = serializer.save(request.user)
-            serializer = PostSerializer(post)
-            return Response(serializer.data,status=201)
-        else:
-            return Response(serializer.errors,status=404)
+    def get_serializer(self,*args,**kwargs):
+        kwarg_list = list(kwargs.keys())
+        if kwargs.keys() and 'many' not in kwarg_list:
+            kwargs['data']['user'] = self.request.user.id
+        return super(PostApiView,self).get_serializer(*args,**kwargs)
 
     @action(detail=True, methods=['put'])
     def likes(self,request,pk=None):
@@ -79,48 +73,6 @@ class PostApiView(ModelViewSet):
 
         
 
-    
-        
-
-
-
-
-
-# class PostLikeApiView(APIView):
-#     authentication_classes = [JWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-#     def post(self,request):
-#         user = request.user
-#         # print(request.data)
-#         post_id = request.data['post']
-#         post = get_object_or_404(Post.objects.all(),pk=post_id)
-#         post.likes.add(user)
-#         return Response(status=200)
-
-# class PostViewsApiView(APIView):
-#     authentication_classes = [JWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self,request):
-#         user = request.user
-#         # print(request.data)
-#         post_id = request.data['post']
-#         post = get_object_or_404(Post.objects.all(),pk=post_id)
-#         post.views.add(user)
-#         return Response(status=200)
-
-# class PostFollowerApiView(APIView):
-
-#     def post(self,request):
-#         user = request.user
-#         # print(request.data)
-#         post_id = request.data['post']
-#         post = get_object_or_404(Post.objects.all(),pk=post_id)
-#         post.followers.add(user)
-#         return Response(status=200)
-
-
-
 class CommentApiView(ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly,IsPostOwnerOrCommentOwnerOrIsAdmin]
@@ -134,17 +86,14 @@ class CommentApiView(ModelViewSet):
         self.check_object_permissions(self.request, obj)
         return obj
 
-    def create(self,request):
-        data = request.data
-        serializer = CommentSerializer(data=data)
+    def get_serializer(self,*args,**kwargs):
+        kwarg_list = list(kwargs.keys())
+        if kwargs.keys() and 'many' not in kwarg_list:
+            kwargs['data']['user'] = self.request.user.id
+        return super(CommentApiView,self).get_serializer(*args,**kwargs)
 
-        if serializer.is_valid(raise_exception=True):
-            comment = serializer.save(request.user)
-            serializer = CommentSerializer(comment)
-            return Response(serializer.data,status=201)
-        else:
-            return Response(serializer.errors,status=404)
 
+    
 
 class ReplyApiView(ModelViewSet):
     serializer_class = ReplySerializer
@@ -157,16 +106,11 @@ class ReplyApiView(ModelViewSet):
         self.check_object_permissions(self.request, obj)
         return obj
     
-    def create(self,request):
-        data = request.data
-
-        serializer = ReplySerializer(data=data)
-        if serializer.is_valid(raise_exception=True):
-            reply = serializer.save(request.user)
-            serializer = ReplySerializer(reply)
-            return Response(serializer.data,status=201)
-        else:
-            return Response(serializer.errors,status=404)
+    def get_serializer(self,*args,**kwargs):
+        kwarg_list = list(kwargs.keys())
+        if kwargs.keys() and 'many' not in kwarg_list:
+            kwargs['data']['user'] = self.request.user.id
+        return super(ReplyApiView,self).get_serializer(*args,**kwargs)
     
 
 class CategoryApiView(ModelViewSet):
@@ -193,9 +137,12 @@ class UserApiView(ModelViewSet):
         user = self.get_object()
       
         serializer = ProfileSerializer(user.profile,data=request.data,partial=True)
+        
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            user_serializer = UserSerializer(request.user,many=False)
+            print(serializer.data)
+            user = get_object_or_404(User.objects.all(),pk=serializer.data['user'])
+            user_serializer = UserSerializer(user,many=False)
             return Response(user_serializer.data,status=200)
         else:
             return Response(serializer.errors,status=404)
@@ -212,9 +159,6 @@ class UserApiView(ModelViewSet):
         
 
     
-
-
-
 class TutorialApiView(ModelViewSet):
     serializer_class = TutorialSerializer
     queryset = Tutorial.objects.all()
@@ -273,20 +217,6 @@ class UserRegisterApiView(APIView):
         else:
             return Response(serializer.errors,status=404)
 
-# class UploadAvatarApiView(APIView):
-#     authentication_classes = [JWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-#     parser_classes = [MultiPartParser,FormParser]
-
-#     def post(self,request): 
-#         print(request.FILES)
-#         serializer = ProfileSerializer(data=request.data,instance=request.user.profile,partial=True)
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save()
-#             user_serializer = UserSerializer(request.user,many=False)
-#             return Response(user_serializer.data,status=200)
-#         else:
-#             return Response(serializer.errors,status=404)
 
 class UserLogoutApiView(APIView):
     authentication_classes = [JWTAuthentication]

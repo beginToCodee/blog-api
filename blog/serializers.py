@@ -6,90 +6,61 @@ from django.contrib.auth.hashers import check_password,make_password
 
 
 class ReplySerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
+    user_detail = serializers.SerializerMethodField()
 
         
 
-    def get_user(self,obj):
+    def get_user_detail(self,obj):
         user = User.objects.get(id=obj.user.id)
         serializer = UserSerializer(user,many=False)
         return serializer.data
     
     class Meta:
         model = Reply
-        fields = "__all__"
-        read_only_fields = ['id','user','comment']
-    
-    def save(self,user):
-        validated_data = self.validated_data
-        validated_data['user']=user
-        
-        reply = Reply.objects.create(**validated_data)
-        return reply
+        fields = ['id','content','created_at','comment','user','user_detail']
+        read_only_fields = ['id','user_detail']
+
     
 
 class CommentSerializer(serializers.ModelSerializer):
     replies = ReplySerializer(read_only=True,many=True)
-    user = serializers.SerializerMethodField()
+    user_detail = serializers.SerializerMethodField()
 
-    # def get_user(self,obj):
-        
-
-    def get_user(self,obj):
+    def get_user_detail(self,obj):
         user = User.objects.get(id=obj.user.id)
         serializer = UserSerializer(user,many=False)
         return serializer.data
    
     class Meta:
         model = Comment
-        fields = "__all__"
-        read_only_fields = ["id","user"]
+        fields = ['id','content','created_at','post','user','user_detail','replies']
+        read_only_fields = ["id",'user_detail']
     
-    def save(self,user):
-        validated_data = self.validated_data
-        validated_data['user']=user
-        
-        comment = Comment.objects.create(**validated_data)
-        return comment
+    
+    
 
 
 
 
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(read_only=True,many=True)
-    user = serializers.SerializerMethodField()
+    user_detail = serializers.SerializerMethodField()
 
     # def get_user(self,obj):
         
 
-    def get_user(self,obj):
+    def get_user_detail(self,obj):
         user = User.objects.get(id=obj.user.id)
         serializer = UserSerializer(user,many=False)
         return serializer.data
 
     class Meta:
         model = Post
-        fields = "__all__"
-        read_only_fields = ['id','user']
+        fields = ['id','title','description','thumbnail','category','user','user_detail','comments']
+        read_only_fields = ['id','user_detail']
     
     
     
-    def save(self,user=None):
-        if user:
-            validated_data = self.validated_data
-            validated_data['user']=user
-            print(validated_data.get('likes'))
-
-            if validated_data.get('likes') is not None:
-                validated_data.pop('likes')
-            if validated_data.get('follower') is not None:
-                validated_data.pop('follower')
-            if validated_data.get('views') is not None:
-                validated_data.pop('views')
-            post = Post.objects.create(**validated_data)
-            return post
-        else:
-            return super(PostSerializer,self).save()
 
 class TutorialSerializer(serializers.ModelSerializer):
     posts = PostSerializer(read_only=True,many=True)
