@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.conf.urls import url
+from django.views.static import serve
 
 admin.site.site_title="Learn More"
 
@@ -25,9 +27,15 @@ urlpatterns = [
     path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  
     path('blog-api/',include("blog.urls")),
     path('admin/', admin.site.urls),
-    # path("google-analytic/",google_analytics_views),
+    
+    url(r'^media/images/collections/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
+    url(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT})
+    
 ]
 
 if settings.DEBUG is True:
     urlpatterns +=static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# else:
+#     urlpatterns +=url(r'^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT})
+#     urlpatterns +=url(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT})

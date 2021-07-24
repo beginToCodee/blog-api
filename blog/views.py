@@ -1,4 +1,5 @@
 
+# from typing_extensions import Required
 from django.db.models.base import Model
 from django.http.response import Http404
 from django.shortcuts import render,get_object_or_404
@@ -19,6 +20,13 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.decorators import parser_classes
+from rest_framework.pagination import PageNumberPagination
+
+
+class MyPageNumberPagination(PageNumberPagination):
+    page_size=2
+    page_size_query_param = 'records'
+    max_page_size = 20
 
 class PostApiView(ModelViewSet):
     authentication_classes = [JWTAuthentication]
@@ -31,6 +39,7 @@ class PostApiView(ModelViewSet):
     filterset_fields = ['category','tutorial']
     search_fields = ['title', 'description','user__username']
 
+    pagination_class = MyPageNumberPagination
 
     def get_object(self):
         pk = self.kwargs.get('pk')
@@ -41,26 +50,51 @@ class PostApiView(ModelViewSet):
 
     def get_serializer(self,*args,**kwargs):
         kwarg_list = list(kwargs.keys())
+        
+        
         if kwargs.keys() and 'many' not in kwarg_list:
-            kwargs['data']['user'] = self.request.user.id
+            # kwargs['data']._mutable = True
+            if self.request.method == 'POST':
+                try:
+                    kwargs['data']['user'] = self.request.user.id
+                except Exception as e:
+                    print(e)
+                    kwargs['data']._mutable = True
+                    kwargs['data']['user'] = self.request.user.id
+            else:
+                obj = self.get_object()
+                
+                kwargs['data']['user'] = obj.user.id
         return super(PostApiView,self).get_serializer(*args,**kwargs)
 
-    @action(detail=True, methods=['put'])
+    @action(detail=True, methods=['put','get'])
     def likes(self,request,pk=None):
         post = get_object_or_404(Post.objects.all(),pk=pk)
-        if request.user in post.likes.all():
-            post.likes.remove(request.user)
-            return Response(status=204)
-        else:
-            post.likes.add(request.user)
-            return Response(status=200)
+        if request.method == 'PUT':
+            if request.user in post.likes.all():
+                post.likes.remove(request.user)
+                return Response(status=204)
+            else:
+                post.likes.add(request.user)
+                return Response(status=200)
+        elif request.method == 'GET':
+            users = post.likes.all()
+            serializer = UserSerializer(users,many=True)
+            return Response(serializer.data)
         
     
-    @action(detail=True, methods=['put'])
+    @action(detail=True, methods=['put','get'])
     def views(self,request,pk=None):
+
         post = get_object_or_404(Post.objects.all(),pk=pk)
-        post.views.add(request.user)
-        return Response(status=200)
+
+        if request.method == 'PUT':
+            post.views.add(request.user)
+            return Response(status=200)
+        elif request.method == 'GET':
+            users = post.views.all()
+            serializer = UserSerializer(users,many=True)
+            return Response(serializer.data)
     
     
     
@@ -80,6 +114,7 @@ class CommentApiView(ModelViewSet):
     queryset = Comment.objects.all()
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
     filterset_fields = ['post','user__username']
+    pagination_class = MyPageNumberPagination
     def get_object(self):
         pk = self.kwargs.get('pk')
         obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
@@ -89,8 +124,26 @@ class CommentApiView(ModelViewSet):
     def get_serializer(self,*args,**kwargs):
         kwarg_list = list(kwargs.keys())
         if kwargs.keys() and 'many' not in kwarg_list:
-            kwargs['data']['user'] = self.request.user.id
+            # kwargs['data']._mutable = True
+            if self.request.method == 'POST':
+                try:
+                    kwargs['data']['user'] = self.request.user.id
+                except Exception as e:
+                    print(e)
+                    kwargs['data']._mutable = True
+                    kwargs['data']['user'] = self.request.user.id
+            else:
+                obj = self.get_object()
+                kwargs['data']['user'] = obj.user.id
         return super(CommentApiView,self).get_serializer(*args,**kwargs)
+    
+    @action(detail=True,methods=['get'])
+    def replies(self,request,pk=None):
+        comment = get_object_or_404(Comment.objects.all(),pk=pk)
+        replies = Reply.objects.filter(comment=comment)
+        serializer = ReplySerializer(replies,many=True)
+        return Response(serializer.data)
+    
 
 
     
@@ -100,6 +153,7 @@ class ReplyApiView(ModelViewSet):
     queryset = Reply.objects.all()
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly,IsPostOwnerOrReplyOwnerOrIsAdmin]
+    pagination_class = MyPageNumberPagination
     def get_object(self):
         
         obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
@@ -109,7 +163,18 @@ class ReplyApiView(ModelViewSet):
     def get_serializer(self,*args,**kwargs):
         kwarg_list = list(kwargs.keys())
         if kwargs.keys() and 'many' not in kwarg_list:
-            kwargs['data']['user'] = self.request.user.id
+            # kwargs['data']._mutable = True
+            if self.request.method == 'POST':
+                try:
+                    kwargs['data']['user'] = self.request.user.id
+                except Exception as e:
+                    print(e)
+                    kwargs['data']._mutable = True
+                    kwargs['data']['user'] = self.request.user.id
+                
+            else:
+                obj = self.get_object()
+                kwargs['data']['user'] = obj.user.id
         return super(ReplyApiView,self).get_serializer(*args,**kwargs)
     
 
@@ -124,6 +189,7 @@ class UserApiView(ModelViewSet):
     queryset = User.objects.all()
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly,IsOwnUserOrIsAdmin]
+    pagination_class = MyPageNumberPagination
 
     def get_object(self):
         pk = self.kwargs.get('pk')
@@ -147,15 +213,21 @@ class UserApiView(ModelViewSet):
         else:
             return Response(serializer.errors,status=404)
     
-    @action(detail=True, methods=['put'])
+    @action(detail=True, methods=['put','get'])
     def followers(self,request,pk=None):
         user = get_object_or_404(User.objects.all(),pk=pk)
-        if request.user in user.profile.follower.all():
-            user.profile.follower.remove(request.user)
-            return Response(status=204)
-        else:
-            user.profile.follower.add(request.user)
-            return Response(status=200)
+        if request.method == 'PUT':
+            if request.user in user.profile.follower.all():
+                user.profile.follower.remove(request.user)
+                return Response(status=204)
+            else:
+                user.profile.follower.add(request.user)
+                return Response(status=200)
+        elif request.method == 'GET':
+            users = user.profile.follower.all()
+            serializer = UserSerializer(users,many=True)
+            return Response(serializer.data)
+
         
 
     
@@ -167,7 +239,7 @@ class TutorialApiView(ModelViewSet):
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
     filterset_fields = ['user']
     search_fields=['name']
-    
+    pagination_class = MyPageNumberPagination
     def get_object(self):
         pk = self.kwargs.get('pk')
         obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])

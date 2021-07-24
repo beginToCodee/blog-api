@@ -7,6 +7,7 @@ class DateTimePicker(models.Model):
 
     class Meta:
         abstract = True
+        ordering=['-id']
 
 
 class Category(models.Model):

@@ -20,11 +20,18 @@ class ReplySerializer(serializers.ModelSerializer):
         fields = ['id','content','created_at','comment','user','user_detail']
         read_only_fields = ['id','user_detail']
 
+
+    
+
     
 
 class CommentSerializer(serializers.ModelSerializer):
-    replies = ReplySerializer(read_only=True,many=True)
+    replies = serializers.SerializerMethodField()
     user_detail = serializers.SerializerMethodField()
+    
+    def get_replies(self,obj):
+        replies = Reply.objects.filter(comment=obj)
+        return len(replies)
 
     def get_user_detail(self,obj):
         user = User.objects.get(id=obj.user.id)
@@ -34,7 +41,7 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id','content','created_at','post','user','user_detail','replies']
-        read_only_fields = ["id",'user_detail']
+        read_only_fields = ["id",'user_detail','replies']
     
     
     
@@ -43,12 +50,15 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    comments = CommentSerializer(read_only=True,many=True)
+    # comments = CommentSerializer(read_only=True,many=True)
+    comments=serializers.SerializerMethodField()
     user_detail = serializers.SerializerMethodField()
 
     # def get_user(self,obj):
         
-
+    def get_comments(self,obj):
+        comments = Comment.objects.filter(post=obj)
+        return len(comments)
     def get_user_detail(self,obj):
         user = User.objects.get(id=obj.user.id)
         serializer = UserSerializer(user,many=False)
@@ -56,8 +66,8 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id','title','description','thumbnail','category','user','user_detail','comments']
-        read_only_fields = ['id','user_detail']
+        fields = ['id','title','description','thumbnail','category','user','user_detail','comments','likes','views','created_at','updated_at']
+        read_only_fields = ['id','user_detail','comments','created_at','updated_at','likes','views']
     
     
     
@@ -101,10 +111,10 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
     def validate(self,validated_data):
-        print(validated_data)
+        
         username = validated_data.get('username','')
         password = validated_data.get('password','')
-        print(username,password)
+       
         if username and password:
             try:
                 user = User.objects.get(username=username)
