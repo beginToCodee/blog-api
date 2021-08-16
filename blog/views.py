@@ -260,12 +260,15 @@ class UserLoginApiView(APIView):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.validated_data['user']
-            user_serializer = UserSerializer(user,many=False)
+            
             refresh = RefreshToken.for_user(user)
             resp = {
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
-                    'user':user_serializer.data
+                    'user':{
+                        'id':user.id,
+                        'username':user.username
+                    }
                 }
             return Response(resp,status=200)
         else:
@@ -278,12 +281,16 @@ class UserRegisterApiView(APIView):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.validated_data.get('user')
-            user_serializer = UserSerializer(user,many=False)
+            
             refresh = RefreshToken.for_user(user)
+        
             resp = {
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
-                    'user':user_serializer.data
+                    'user':{
+                        'id':user.id,
+                        'username':user.username
+                    }
                 }
             return Response(resp,status=200)
         else:
