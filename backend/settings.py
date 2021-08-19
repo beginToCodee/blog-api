@@ -13,12 +13,12 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 import os
 
-import environ
+# import environ
 
-env = environ.Env()
+# env = environ.Env()
 
 # reading .env file
-environ.Env.read_env()
+# environ.Env.read_env()
 #...
 #...rest will be same
 
@@ -97,12 +97,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASE_URL="sqlite:///db.sqlite3"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'sqlite3.db'),
-    }
-}
+
 
 # DATABASES = {
 #     'default': {
@@ -117,8 +112,14 @@ DATABASES = {
 
 
 import dj_database_url
-
-DATABASES['default'] = dj_database_url.config(conn_max_age=600)
+DATABASES = {}
+if DEBUG:
+    DATABASES['default']={
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'sqlite3.db'),
+    }
+else:
+    DATABASES['default'] = dj_database_url.config(conn_max_age=600)
 
 
 # Password validation

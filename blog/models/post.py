@@ -40,6 +40,8 @@ class Post(DateTimePicker):
     @staticmethod
     def autocomplete_search_fields():
         return 'title', 'user__name'
+    class Meta:
+        ordering = ['id']
 
     
 
@@ -50,9 +52,14 @@ class Comment(DateTimePicker):
     user = models.ForeignKey('auth.User',on_delete=models.CASCADE,related_name="comments")
     post = models.ForeignKey(Post,on_delete=models.CASCADE,related_name="comments")
 
+    class Meta:
+        ordering = ['id']
+
     
 
 class Reply(DateTimePicker):
     content = models.TextField()
     user = models.ForeignKey('auth.User',on_delete=models.CASCADE,related_name="replies")
     comment = models.ForeignKey(Comment,on_delete=models.CASCADE,related_name="replies")
+    class Meta:
+        ordering = ['id']

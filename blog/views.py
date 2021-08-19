@@ -189,7 +189,7 @@ class UserApiView(ModelViewSet):
     queryset = User.objects.all()
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly,IsOwnUserOrIsAdmin]
-    pagination_class = MyPageNumberPagination
+    
 
     def get_object(self):
         pk = self.kwargs.get('pk')
@@ -212,6 +212,7 @@ class UserApiView(ModelViewSet):
             return Response(user_serializer.data,status=200)
         else:
             return Response(serializer.errors,status=404)
+    
     
     @action(detail=True, methods=['put','get'])
     def followers(self,request,pk=None):

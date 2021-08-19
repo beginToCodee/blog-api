@@ -95,13 +95,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ['id','user']
 class UserSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
+    profile = ProfileSerializer(read_only=True,many=False)
     # tutorials = TutorialSerializer(read_only=True,many=True)
     # posts = PostSerializer(many=True,read_only=True)
     class Meta:
         model = User
         fields=['id','username','email','first_name','last_name','last_login','profile']
         read_only_fields = ['id','password','username']
+        ordering = ['id']
   
 
 
