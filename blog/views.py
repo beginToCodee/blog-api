@@ -206,7 +206,7 @@ class UserApiView(ModelViewSet):
         
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            print(serializer.data)
+           
             user = get_object_or_404(User.objects.all(),pk=serializer.data['user'])
             user_serializer = UserSerializer(user,many=False)
             return Response(user_serializer.data,status=200)
